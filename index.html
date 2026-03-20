@@ -22,9 +22,7 @@
     --shadow: 0 4px 24px rgba(44,26,14,0.10);
     --shadow-lg: 0 12px 48px rgba(44,26,14,0.18);
   }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--cream);
     font-family: 'DM Sans', sans-serif;
@@ -32,13 +30,150 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* — Noise texture overlay — */
   body::before {
     content: '';
     position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
     pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  /* ═══════════ AUTH SCREEN ═══════════ */
+  .auth-screen {
+    position: fixed; inset: 0; z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--espresso);
+    overflow-y: auto;
+  }
+  .auth-screen.hidden { display: none; }
+  .auth-bg-pattern {
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(201,144,122,0.04) 0px,
+      rgba(201,144,122,0.04) 1px,
+      transparent 1px,
+      transparent 40px
+    );
+    pointer-events: none;
+  }
+  .auth-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,144,122,0.15) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .auth-card {
+    position: relative; z-index: 1;
+    background: var(--card-bg);
+    border-radius: 28px;
+    padding: 3rem 2.8rem;
+    width: 100%; max-width: 440px;
+    margin: 2rem;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+    animation: slideUp 0.5s cubic-bezier(.22,.68,0,1.2);
+  }
+  .auth-logo {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem; font-weight: 700;
+    color: var(--espresso); margin-bottom: 0.4rem;
+  }
+  .auth-logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dusty-rose); }
+  .auth-tagline {
+    font-size: 0.8rem; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 2.2rem;
+  }
+  .auth-tabs {
+    display: flex; border-radius: 12px;
+    background: var(--parchment);
+    padding: 4px; margin-bottom: 2rem; gap: 4px;
+  }
+  .auth-tab {
+    flex: 1; padding: 0.7rem;
+    border: none; border-radius: 9px;
+    background: transparent; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    color: var(--muted); transition: all 0.25s ease;
+  }
+  .auth-tab.active {
+    background: var(--espresso); color: var(--cream);
+    box-shadow: 0 3px 12px rgba(44,26,14,0.25);
+  }
+  .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+  .auth-form.hidden { display: none; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group label {
+    font-size: 0.75rem; letter-spacing: 0.07em;
+    text-transform: uppercase; font-weight: 500;
+    color: var(--mocha);
+  }
+  .form-group input {
+    padding: 0.85rem 1.1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--espresso);
+    transition: all 0.2s ease; outline: none;
+  }
+  .form-group input:focus {
+    border-color: var(--dusty-rose);
+    box-shadow: 0 0 0 3px rgba(201,144,122,0.15);
+  }
+  .form-group input::placeholder { color: var(--muted); }
+  .auth-divider {
+    display: flex; align-items: center; gap: 0.8rem;
+    font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .auth-error {
+    background: rgba(139,58,58,0.1); color: #8b3a3a;
+    border: 1px solid rgba(139,58,58,0.2);
+    border-radius: 10px; padding: 0.7rem 1rem;
+    font-size: 0.82rem; display: none;
+  }
+  .auth-error.show { display: block; }
+  .auth-success {
+    background: rgba(138,158,133,0.15); color: #3d5c38;
+    border: 1px solid rgba(138,158,133,0.3);
+    border-radius: 10px; padding: 0.7rem 1rem;
+    font-size: 0.82rem; display: none;
+  }
+  .auth-success.show { display: block; }
+  .btn-auth {
+    width: 100%; padding: 0.95rem;
+    background: var(--espresso); color: var(--cream);
+    border: none; border-radius: 50px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: all 0.2s ease; margin-top: 0.5rem;
+  }
+  .btn-auth:hover {
+    background: var(--mocha);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(44,26,14,0.3);
+  }
+  .password-hint {
+    font-size: 0.72rem; color: var(--muted);
+    margin-top: 0.2rem; line-height: 1.5;
+  }
+  .email-note {
+    font-size: 0.72rem; color: var(--muted);
+    text-align: center; line-height: 1.5; margin-top: 0.5rem;
+  }
+  .email-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: rgba(201,144,122,0.12);
+    border: 1px solid rgba(201,144,122,0.25);
+    border-radius: 6px; padding: 0.2rem 0.5rem;
+    font-size: 0.7rem; color: var(--mocha);
+    margin-top: 0.3rem;
   }
 
   /* ═══════════ HEADER ═══════════ */
@@ -57,11 +192,92 @@
     display: flex; align-items: center; gap: 0.6rem;
   }
   .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dusty-rose); display: inline-block; }
+  .header-right { display: flex; align-items: center; gap: 2rem; }
   .header-stats {
-    display: flex; gap: 2rem; font-size: 0.78rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase;
+    display: flex; gap: 2rem; font-size: 0.78rem; font-weight: 300;
+    letter-spacing: 0.08em; text-transform: uppercase;
     color: rgba(245,240,232,0.65);
   }
   .header-stats span strong { color: var(--dusty-rose); font-weight: 500; margin-right: 0.25rem; }
+  .user-pill {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(245,240,232,0.1);
+    border: 1px solid rgba(245,240,232,0.15);
+    border-radius: 50px;
+    padding: 0.35rem 0.9rem 0.35rem 0.4rem;
+    cursor: pointer; position: relative;
+    transition: all 0.2s ease;
+  }
+  .user-pill:hover { background: rgba(245,240,232,0.16); }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--dusty-rose);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; color: white;
+    letter-spacing: 0.03em;
+  }
+  .user-name { font-size: 0.8rem; color: rgba(245,240,232,0.85); font-weight: 400; }
+  .user-email-small { font-size: 0.65rem; color: rgba(245,240,232,0.45); }
+  .user-dropdown {
+    position: absolute; top: calc(100% + 10px); right: 0;
+    background: var(--card-bg); border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    width: 240px; overflow: hidden;
+    display: none; flex-direction: column;
+    animation: slideUp 0.25s cubic-bezier(.22,.68,0,1.2);
+  }
+  .user-dropdown.open { display: flex; }
+  .dropdown-header {
+    padding: 1.1rem 1.2rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--parchment);
+  }
+  .dropdown-header .d-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; font-weight: 600;
+    color: var(--espresso); margin-bottom: 0.15rem;
+  }
+  .dropdown-header .d-email {
+    font-size: 0.73rem; color: var(--muted);
+  }
+  .dropdown-header .d-username {
+    font-size: 0.7rem; color: var(--dusty-rose);
+    margin-top: 0.1rem;
+  }
+  .dropdown-item {
+    padding: 0.75rem 1.2rem;
+    font-size: 0.82rem; color: var(--espresso);
+    cursor: pointer; transition: background 0.15s ease;
+    display: flex; align-items: center; gap: 0.6rem;
+    border: none; background: none; text-align: left; width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    border-bottom: 1px solid var(--border);
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: var(--parchment); }
+  .dropdown-item.danger { color: #8b3a3a; }
+  .dropdown-item.danger:hover { background: rgba(139,58,58,0.08); }
+
+  /* ═══════════ CHANGE PASSWORD MODAL ═══════════ */
+  .chpw-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,18,8,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    display: none; align-items: center; justify-content: center;
+  }
+  .chpw-overlay.open { display: flex; }
+  .chpw-modal {
+    background: var(--card-bg); border-radius: 20px;
+    padding: 2.2rem; width: 100%; max-width: 380px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s cubic-bezier(.22,.68,0,1.2);
+  }
+  .chpw-modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; margin-bottom: 1.5rem;
+  }
 
   /* ═══════════ MAIN LAYOUT ═══════════ */
   main {
@@ -69,8 +285,6 @@
     padding: 2.5rem 2rem 5rem;
     position: relative; z-index: 1;
   }
-
-  /* ═══════════ SECTION TITLES ═══════════ */
   .section-label {
     font-family: 'Playfair Display', serif;
     font-size: 1.55rem; font-weight: 600;
@@ -133,6 +347,7 @@
     width: 100%; max-width: 460px;
     box-shadow: var(--shadow-lg);
     animation: slideUp 0.3s cubic-bezier(.22,.68,0,1.2);
+    max-height: 90vh; overflow-y: auto;
   }
   .modal h2 {
     font-family: 'Playfair Display', serif;
@@ -149,9 +364,7 @@
     font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
     font-weight: 500; color: var(--mocha); display: block; margin-bottom: 0.6rem;
   }
-  .tags-grid {
-    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.8rem;
-  }
+  .tags-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.8rem; }
   .tag-btn {
     padding: 0.45rem 1rem; border-radius: 50px;
     border: 1.5px solid var(--border);
@@ -179,9 +392,7 @@
   .btn-sage:hover { background: #728e6d; transform: translateY(-1px); }
 
   /* ═══════════ FILTER TABS ═══════════ */
-  .filter-tabs {
-    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.8rem;
-  }
+  .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.8rem; }
   .filter-tab {
     padding: 0.45rem 1.1rem; border-radius: 50px;
     border: 1.5px solid var(--border);
@@ -218,15 +429,8 @@
     position: relative;
     cursor: pointer;
   }
-  .clothing-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--dusty-rose);
-  }
-  .clothing-card-img {
-    width: 100%; height: 200px; object-fit: cover;
-    display: block;
-  }
+  .clothing-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-lg); border-color: var(--dusty-rose); }
+  .clothing-card-img { width: 100%; height: 200px; object-fit: cover; display: block; }
   .clothing-card-body { padding: 0.75rem; }
   .clothing-card-tag {
     font-size: 0.7rem; font-weight: 500; letter-spacing: 0.07em;
@@ -243,12 +447,7 @@
     font-size: 0.75rem; opacity: 0; transition: opacity 0.2s ease;
   }
   .clothing-card:hover .card-delete { opacity: 1; }
-
-  .empty-state {
-    grid-column: 1/-1;
-    text-align: center; padding: 4rem 2rem;
-    color: var(--muted);
-  }
+  .empty-state { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--muted); }
   .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
   .empty-state p { font-size: 0.88rem; line-height: 1.6; }
 
@@ -283,12 +482,9 @@
   .generator-section .section-label { color: var(--cream); margin-bottom: 0.2rem; }
   .generator-section .section-sub { color: rgba(245,240,232,0.5); margin-bottom: 0; }
   .gen-controls { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-
-  /* ═══════════ OUTFIT RESULT ═══════════ */
   .outfit-result {
     display: flex; gap: 1.2rem; flex-wrap: wrap;
-    min-height: 60px;
-    align-items: flex-start;
+    min-height: 60px; align-items: flex-start;
   }
   .outfit-item {
     background: rgba(245,240,232,0.08);
@@ -312,11 +508,7 @@
     font-style: italic; font-family: 'Cormorant Garamond', serif;
     font-size: 1rem; padding: 1rem 0;
   }
-
-  /* Outfit generation options panel */
-  .gen-options {
-    display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
-  }
+  .gen-options { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
   .gen-option-btn {
     padding: 0.45rem 1rem; border-radius: 50px;
     border: 1.5px solid rgba(245,240,232,0.2);
@@ -345,14 +537,8 @@
     animation: cardIn 0.4s cubic-bezier(.22,.68,0,1.2) both;
   }
   .saved-outfit-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-  .saved-outfit-images {
-    display: flex; gap: 2px; height: 140px;
-    background: var(--parchment);
-  }
-  .saved-outfit-images img {
-    flex: 1; object-fit: cover; height: 100%;
-    min-width: 0;
-  }
+  .saved-outfit-images { display: flex; gap: 2px; height: 140px; background: var(--parchment); }
+  .saved-outfit-images img { flex: 1; object-fit: cover; height: 100%; min-width: 0; }
   .saved-outfit-body { padding: 1rem 1.1rem; display: flex; align-items: center; justify-content: space-between; }
   .saved-outfit-meta h4 {
     font-family: 'Playfair Display', serif;
@@ -379,6 +565,17 @@
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: #8b3a3a; }
+  .toast.success-t { background: #3d5c38; }
+
+  /* ═══════════ DIVIDER ═══════════ */
+  .fancy-divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 2.5rem 0; color: var(--muted);
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .fancy-divider::before, .fancy-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
 
   /* ═══════════ ANIMATIONS ═══════════ */
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -400,16 +597,6 @@
   }
   .spin { animation: spinOnce 0.5s ease; }
 
-  /* ═══════════ DIVIDER ═══════════ */
-  .fancy-divider {
-    display: flex; align-items: center; gap: 1rem;
-    margin: 2.5rem 0; color: var(--muted);
-    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
-  }
-  .fancy-divider::before, .fancy-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-
   /* ═══════════ RESPONSIVE ═══════════ */
   @media (max-width: 640px) {
     header { padding: 0 1.2rem; }
@@ -419,26 +606,112 @@
     .clothing-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     .outfit-item { width: 120px; }
     .outfit-item img { height: 130px; }
+    .user-name { display: none; }
+    .user-email-small { display: none; }
   }
 </style>
 </head>
 <body>
 
+<!-- ═══════ AUTH SCREEN ═══════ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-bg-pattern"></div>
+  <div class="auth-glow"></div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-dot"></div>
+      My Closet
+    </div>
+    <div class="auth-tagline">Your private digital wardrobe</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignIn" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tabSignUp" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <form class="auth-form" id="signInForm" onsubmit="handleSignIn(event)">
+      <div class="auth-error" id="siError"></div>
+      <div class="auth-success" id="siSuccess"></div>
+      <div class="form-group">
+        <label>Username or Email</label>
+        <input type="text" id="siIdentifier" placeholder="username or email@example.com" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn-auth">Sign In to My Closet</button>
+      <p class="email-note">Your wardrobe data is private and secure to your account.</p>
+    </form>
+
+    <!-- SIGN UP FORM -->
+    <form class="auth-form hidden" id="signUpForm" onsubmit="handleSignUp(event)">
+      <div class="auth-error" id="suError"></div>
+      <div class="auth-success" id="suSuccess"></div>
+      <div class="form-group">
+        <label>Display Name</label>
+        <input type="text" id="suName" placeholder="Sophia" required autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="suUsername" placeholder="sophia_closet" required autocomplete="username" />
+        <span class="password-hint">Letters, numbers, underscores only. Min 3 characters.</span>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="suEmail" placeholder="sophia@example.com" required autocomplete="email" />
+        <span class="email-badge">📧 Used for account recovery & notifications</span>
+      </div>
+      <div class="auth-divider">account security</div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="suPassword" placeholder="••••••••" required autocomplete="new-password" />
+        <span class="password-hint">Minimum 6 characters.</span>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="suConfirm" placeholder="••••••••" required autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn-auth">Create My Closet</button>
+      <p class="email-note">By signing up, your closet data is stored privately in this browser.</p>
+    </form>
+  </div>
+</div>
+
 <!-- ═══════ HEADER ═══════ -->
-<header>
+<header id="appHeader" style="display:none;">
   <div class="logo">
     <span class="logo-dot"></span>
     My Closet
   </div>
-  <div class="header-stats">
-    <span><strong id="stat-items">0</strong> pieces</span>
-    <span><strong id="stat-outfits">0</strong> saved looks</span>
-    <span><strong id="stat-cats">0</strong> categories</span>
+  <div class="header-right">
+    <div class="header-stats">
+      <span><strong id="stat-items">0</strong> pieces</span>
+      <span><strong id="stat-outfits">0</strong> saved looks</span>
+      <span><strong id="stat-cats">0</strong> categories</span>
+    </div>
+    <div class="user-pill" id="userPill" onclick="toggleDropdown()">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div>
+        <div class="user-name" id="userNameDisplay">User</div>
+        <div class="user-email-small" id="userEmailDisplay"></div>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+          <div class="d-name" id="ddName">—</div>
+          <div class="d-email" id="ddEmail">—</div>
+          <div class="d-username" id="ddUsername">—</div>
+        </div>
+        <button class="dropdown-item" onclick="openChangePassword()">🔑 Change Password</button>
+        <button class="dropdown-item danger" onclick="signOut()">→ Sign Out</button>
+      </div>
+    </div>
   </div>
 </header>
 
 <!-- ═══════ MAIN ═══════ -->
-<main>
+<main id="appMain" style="display:none;">
 
   <!-- UPLOAD -->
   <div class="upload-section">
@@ -456,31 +729,15 @@
   <div id="wardrobeSection">
     <div class="section-label">Your Wardrobe</div>
     <div class="section-sub">All your pieces</div>
-
     <div class="filter-tabs" id="filterTabs">
-      <button class="filter-tab active" data-cat="all" onclick="filterBy('all')">
-        All <span class="filter-count" id="fc-all">0</span>
-      </button>
-      <button class="filter-tab" data-cat="tops" onclick="filterBy('tops')">
-        Tops <span class="filter-count" id="fc-tops">0</span>
-      </button>
-      <button class="filter-tab" data-cat="bottoms" onclick="filterBy('bottoms')">
-        Bottoms <span class="filter-count" id="fc-bottoms">0</span>
-      </button>
-      <button class="filter-tab" data-cat="dresses" onclick="filterBy('dresses')">
-        Dresses <span class="filter-count" id="fc-dresses">0</span>
-      </button>
-      <button class="filter-tab" data-cat="outerwear" onclick="filterBy('outerwear')">
-        Outerwear <span class="filter-count" id="fc-outerwear">0</span>
-      </button>
-      <button class="filter-tab" data-cat="shoes" onclick="filterBy('shoes')">
-        Shoes <span class="filter-count" id="fc-shoes">0</span>
-      </button>
-      <button class="filter-tab" data-cat="accessories" onclick="filterBy('accessories')">
-        Accessories <span class="filter-count" id="fc-accessories">0</span>
-      </button>
+      <button class="filter-tab active" data-cat="all" onclick="filterBy('all')">All <span class="filter-count" id="fc-all">0</span></button>
+      <button class="filter-tab" data-cat="tops" onclick="filterBy('tops')">Tops <span class="filter-count" id="fc-tops">0</span></button>
+      <button class="filter-tab" data-cat="bottoms" onclick="filterBy('bottoms')">Bottoms <span class="filter-count" id="fc-bottoms">0</span></button>
+      <button class="filter-tab" data-cat="dresses" onclick="filterBy('dresses')">Dresses <span class="filter-count" id="fc-dresses">0</span></button>
+      <button class="filter-tab" data-cat="outerwear" onclick="filterBy('outerwear')">Outerwear <span class="filter-count" id="fc-outerwear">0</span></button>
+      <button class="filter-tab" data-cat="shoes" onclick="filterBy('shoes')">Shoes <span class="filter-count" id="fc-shoes">0</span></button>
+      <button class="filter-tab" data-cat="accessories" onclick="filterBy('accessories')">Accessories <span class="filter-count" id="fc-accessories">0</span></button>
     </div>
-
     <div class="clothing-grid" id="clothingGrid">
       <div class="empty-state">
         <div class="empty-icon">🧺</div>
@@ -499,16 +756,10 @@
         <div class="section-sub">Let the closet decide</div>
       </div>
       <div class="gen-controls">
-        <button class="btn btn-rose" onclick="generateOutfit()" id="genBtn" style="min-width:160px;">
-          ✦ Generate Look
-        </button>
-        <button class="btn btn-secondary" onclick="saveOutfit()" id="saveBtn" style="color:var(--espresso); min-width:130px; display:none;">
-          ♡ Save Look
-        </button>
+        <button class="btn btn-rose" onclick="generateOutfit()" id="genBtn" style="min-width:160px;">✦ Generate Look</button>
+        <button class="btn btn-secondary" onclick="saveOutfit()" id="saveBtn" style="color:var(--espresso); min-width:130px; display:none;">♡ Save Look</button>
       </div>
     </div>
-
-    <!-- Generation Mode Options -->
     <div>
       <div style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:0.75rem;">Generation Style</div>
       <div class="gen-options">
@@ -519,7 +770,6 @@
         <button class="gen-option-btn" data-mode="layered" onclick="setGenMode('layered', this)">Layered</button>
       </div>
     </div>
-
     <div class="outfit-result" id="outfitResult">
       <div class="outfit-empty">Generate a look to see your outfit appear here…</div>
     </div>
@@ -539,7 +789,7 @@
 
 </main>
 
-<!-- ═══════ MODAL ═══════ -->
+<!-- ═══════ ITEM TAG MODAL ═══════ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2>Tag This Piece</h2>
@@ -561,15 +811,291 @@
   </div>
 </div>
 
+<!-- ═══════ CHANGE PASSWORD MODAL ═══════ -->
+<div class="chpw-overlay" id="chpwOverlay">
+  <div class="chpw-modal">
+    <h3>Change Password</h3>
+    <div class="auth-error" id="cpError" style="margin-bottom:1rem;"></div>
+    <div class="auth-success" id="cpSuccess" style="margin-bottom:1rem;"></div>
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="form-group">
+        <label>Current Password</label>
+        <input type="password" id="cpCurrent" placeholder="••••••••" />
+      </div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="cpNew" placeholder="••••••••" />
+        <span class="password-hint">Minimum 6 characters.</span>
+      </div>
+      <div class="form-group">
+        <label>Confirm New Password</label>
+        <input type="password" id="cpConfirm" placeholder="••••••••" />
+      </div>
+      <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+        <button class="btn btn-secondary" onclick="closeChangePassword()" style="flex:1;">Cancel</button>
+        <button class="btn btn-primary" onclick="submitChangePassword()" style="flex:1;">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════ TOAST ═══════ -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let closet = JSON.parse(localStorage.getItem('closet_items') || '[]');
-let savedOutfits = JSON.parse(localStorage.getItem('closet_saved') || '[]');
+// ════════════════════════════════════
+//  AUTH STATE
+// ════════════════════════════════════
+let currentUser = null;
+
+const USERS_KEY = 'closet_users_db';
+const SESSION_KEY = 'closet_session';
+
+function getUsersDB() {
+  return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+}
+function saveUsersDB(db) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(db));
+}
+function getSession() {
+  return localStorage.getItem(SESSION_KEY);
+}
+function setSession(username) {
+  localStorage.setItem(SESSION_KEY, username);
+}
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function userKey(username, type) {
+  return `closet_${type}_${username}`;
+}
+
+// ════════════════════════════════════
+//  AUTH UI SWITCHING
+// ════════════════════════════════════
+function switchAuthTab(tab) {
+  const siForm = document.getElementById('signInForm');
+  const suForm = document.getElementById('signUpForm');
+  const tabSI  = document.getElementById('tabSignIn');
+  const tabSU  = document.getElementById('tabSignUp');
+  if (tab === 'signin') {
+    siForm.classList.remove('hidden');
+    suForm.classList.add('hidden');
+    tabSI.classList.add('active');
+    tabSU.classList.remove('active');
+  } else {
+    siForm.classList.add('hidden');
+    suForm.classList.remove('hidden');
+    tabSI.classList.remove('active');
+    tabSU.classList.add('active');
+  }
+}
+
+// ════════════════════════════════════
+//  SIGN UP
+// ════════════════════════════════════
+function handleSignUp(e) {
+  e.preventDefault();
+  const name     = document.getElementById('suName').value.trim();
+  const username = document.getElementById('suUsername').value.trim().toLowerCase();
+  const email    = document.getElementById('suEmail').value.trim().toLowerCase();
+  const password = document.getElementById('suPassword').value;
+  const confirm  = document.getElementById('suConfirm').value;
+  const errEl    = document.getElementById('suError');
+  const sucEl    = document.getElementById('suSuccess');
+
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+    return showAuthError(errEl, 'Username must be at least 3 characters (letters, numbers, underscores only).');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return showAuthError(errEl, 'Please enter a valid email address.');
+  }
+  if (password.length < 6) {
+    return showAuthError(errEl, 'Password must be at least 6 characters.');
+  }
+  if (password !== confirm) {
+    return showAuthError(errEl, 'Passwords do not match.');
+  }
+
+  const db = getUsersDB();
+  if (db[username]) {
+    return showAuthError(errEl, 'Username already taken. Try another one.');
+  }
+  // Check email uniqueness
+  const emailTaken = Object.values(db).some(u => u.email === email);
+  if (emailTaken) {
+    return showAuthError(errEl, 'An account with this email already exists.');
+  }
+
+  db[username] = { name, username, email, password, createdAt: new Date().toISOString() };
+  saveUsersDB(db);
+
+  sucEl.textContent = '✓ Account created! Signing you in…';
+  sucEl.classList.add('show');
+  setTimeout(() => loginUser(username), 1000);
+}
+
+// ════════════════════════════════════
+//  SIGN IN
+// ════════════════════════════════════
+function handleSignIn(e) {
+  e.preventDefault();
+  const identifier = document.getElementById('siIdentifier').value.trim().toLowerCase();
+  const password   = document.getElementById('siPassword').value;
+  const errEl      = document.getElementById('siError');
+  const sucEl      = document.getElementById('siSuccess');
+
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+  const db = getUsersDB();
+  let matchedUser = null;
+
+  // Check by username or email
+  if (db[identifier]) {
+    matchedUser = db[identifier];
+  } else {
+    matchedUser = Object.values(db).find(u => u.email === identifier) || null;
+  }
+
+  if (!matchedUser || matchedUser.password !== password) {
+    return showAuthError(errEl, 'Invalid username/email or password. Please try again.');
+  }
+
+  sucEl.textContent = `✓ Welcome back, ${matchedUser.name}!`;
+  sucEl.classList.add('show');
+  setTimeout(() => loginUser(matchedUser.username), 800);
+}
+
+function showAuthError(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ════════════════════════════════════
+//  LOGIN / LOGOUT
+// ════════════════════════════════════
+function loginUser(username) {
+  const db = getUsersDB();
+  currentUser = db[username];
+  setSession(username);
+  loadUserData();
+  showApp();
+}
+
+function signOut() {
+  clearSession();
+  currentUser = null;
+  closet = []; savedOutfits = [];
+  document.getElementById('appHeader').style.display = 'none';
+  document.getElementById('appMain').style.display = 'none';
+  document.getElementById('authScreen').classList.remove('hidden');
+  // Reset forms
+  document.getElementById('signInForm').reset();
+  document.getElementById('signUpForm').reset();
+  document.getElementById('siError').classList.remove('show');
+  document.getElementById('siSuccess').classList.remove('show');
+  switchAuthTab('signin');
+  closeDropdown();
+}
+
+function showApp() {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appHeader').style.display = 'flex';
+  document.getElementById('appMain').style.display = 'block';
+  // Populate header user info
+  const initials = currentUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('userNameDisplay').textContent = currentUser.name;
+  document.getElementById('userEmailDisplay').textContent = currentUser.email;
+  document.getElementById('ddName').textContent = currentUser.name;
+  document.getElementById('ddEmail').textContent = currentUser.email;
+  document.getElementById('ddUsername').textContent = '@' + currentUser.username;
+  renderCloset();
+  renderSaved();
+  updateStats();
+}
+
+// ════════════════════════════════════
+//  USER DATA (per-user localStorage)
+// ════════════════════════════════════
+function loadUserData() {
+  closet        = JSON.parse(localStorage.getItem(userKey(currentUser.username, 'items')) || '[]');
+  savedOutfits  = JSON.parse(localStorage.getItem(userKey(currentUser.username, 'saved')) || '[]');
+}
+
+function save() {
+  if (!currentUser) return;
+  localStorage.setItem(userKey(currentUser.username, 'items'), JSON.stringify(closet));
+  localStorage.setItem(userKey(currentUser.username, 'saved'), JSON.stringify(savedOutfits));
+}
+
+// ════════════════════════════════════
+//  DROPDOWN
+// ════════════════════════════════════
+function toggleDropdown() {
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+function closeDropdown() {
+  document.getElementById('userDropdown').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('userPill').contains(e.target)) closeDropdown();
+});
+
+// ════════════════════════════════════
+//  CHANGE PASSWORD
+// ════════════════════════════════════
+function openChangePassword() {
+  closeDropdown();
+  document.getElementById('cpCurrent').value = '';
+  document.getElementById('cpNew').value = '';
+  document.getElementById('cpConfirm').value = '';
+  document.getElementById('cpError').classList.remove('show');
+  document.getElementById('cpSuccess').classList.remove('show');
+  document.getElementById('chpwOverlay').classList.add('open');
+}
+function closeChangePassword() {
+  document.getElementById('chpwOverlay').classList.remove('open');
+}
+function submitChangePassword() {
+  const cur  = document.getElementById('cpCurrent').value;
+  const nw   = document.getElementById('cpNew').value;
+  const conf = document.getElementById('cpConfirm').value;
+  const errEl = document.getElementById('cpError');
+  const sucEl = document.getElementById('cpSuccess');
+  errEl.classList.remove('show'); sucEl.classList.remove('show');
+  const db = getUsersDB();
+  if (db[currentUser.username].password !== cur) {
+    errEl.textContent = 'Current password is incorrect.';
+    return errEl.classList.add('show');
+  }
+  if (nw.length < 6) {
+    errEl.textContent = 'New password must be at least 6 characters.';
+    return errEl.classList.add('show');
+  }
+  if (nw !== conf) {
+    errEl.textContent = 'New passwords do not match.';
+    return errEl.classList.add('show');
+  }
+  db[currentUser.username].password = nw;
+  saveUsersDB(db);
+  currentUser.password = nw;
+  sucEl.textContent = '✓ Password updated successfully!';
+  sucEl.classList.add('show');
+  setTimeout(closeChangePassword, 1500);
+}
+document.getElementById('chpwOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeChangePassword();
+});
+
+// ════════════════════════════════════
+//  CLOSET STATE
+// ════════════════════════════════════
+let closet = [];
+let savedOutfits = [];
 let pendingItem = null;
 let selectedTag = null;
 let currentFilter = 'all';
@@ -577,35 +1103,20 @@ let currentOutfit = [];
 let genMode = 'full';
 
 const CATEGORIES = ['tops','bottoms','dresses','outerwear','shoes','accessories'];
-
-const CAT_EMOJI = {
-  tops: '👚', bottoms: '👖', dresses: '👗',
-  outerwear: '🧥', shoes: '👠', accessories: '💍'
-};
-
-// Mode → which categories to pull from
+const CAT_EMOJI = { tops:'👚', bottoms:'👖', dresses:'👗', outerwear:'🧥', shoes:'👠', accessories:'💍' };
 const GEN_MODES = {
-  'full':      ['tops','bottoms','shoes','accessories'],
-  'top-bottom':['tops','bottoms'],
-  'dress':     ['dresses','shoes','accessories'],
-  'casual':    ['tops','bottoms','shoes'],
-  'layered':   ['tops','outerwear','bottoms','shoes'],
+  'full':       ['tops','bottoms','shoes','accessories'],
+  'top-bottom': ['tops','bottoms'],
+  'dress':      ['dresses','shoes','accessories'],
+  'casual':     ['tops','bottoms','shoes'],
+  'layered':    ['tops','outerwear','bottoms','shoes'],
 };
 
-// ═══════════════════════════════════════
-//  PERSIST
-// ═══════════════════════════════════════
-function save() {
-  localStorage.setItem('closet_items', JSON.stringify(closet));
-  localStorage.setItem('closet_saved', JSON.stringify(savedOutfits));
-}
-
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 //  UPLOAD
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 const uploadZone = document.getElementById('uploadZone');
 const fileInput  = document.getElementById('fileInput');
-
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
 uploadZone.addEventListener('drop', e => {
@@ -613,7 +1124,6 @@ uploadZone.addEventListener('drop', e => {
   handleFiles(e.dataTransfer.files);
 });
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
-
 function handleFiles(files) {
   Array.from(files).forEach(file => {
     if (!file.type.startsWith('image/')) return;
@@ -624,12 +1134,11 @@ function handleFiles(files) {
   fileInput.value = '';
 }
 
-// ═══════════════════════════════════════
-//  MODAL
-// ═══════════════════════════════════════
+// ════════════════════════════════════
+//  ITEM MODAL
+// ════════════════════════════════════
 function openModal(imgData) {
-  pendingItem = imgData;
-  selectedTag = null;
+  pendingItem = imgData; selectedTag = null;
   document.getElementById('modalPreview').src = imgData;
   document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('modalOverlay').classList.add('open');
@@ -651,33 +1160,30 @@ function confirmAdd() {
     category: selectedTag,
     addedAt: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
   };
-  closet.push(item);
-  save();
-  closeModal();
-  renderCloset();
-  updateStats();
+  closet.push(item); save();
+  closeModal(); renderCloset(); updateStats();
   showToast(`${CAT_EMOJI[selectedTag]} Added to ${cap(selectedTag)}!`);
 }
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 //  RENDER CLOSET
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 function renderCloset() {
   const grid = document.getElementById('clothingGrid');
   const filtered = currentFilter === 'all' ? closet : closet.filter(i => i.category === currentFilter);
-
   updateFilterCounts();
-
   if (filtered.length === 0) {
     grid.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">${currentFilter === 'all' ? '🧺' : CAT_EMOJI[currentFilter] || '🧺'}</div>
-      <p>${currentFilter === 'all' ? 'Your closet is empty.<br/>Upload some clothing photos to get started!' : `No ${cap(currentFilter)} yet.<br/>Upload some to fill this category!`}</p>
+      <div class="empty-icon">${currentFilter==='all' ? '🧺' : CAT_EMOJI[currentFilter]||'🧺'}</div>
+      <p>${currentFilter==='all' ? 'Your closet is empty.<br/>Upload some clothing photos to get started!' : `No ${cap(currentFilter)} yet.<br/>Upload some to fill this category!`}</p>
     </div>`;
     return;
   }
-
   grid.innerHTML = filtered.map((item, idx) => `
-    <div class="clothing-card" style="animation-delay:${idx * 0.05}s">
+    <div class="clothing-card" style="animation-delay:${idx*0.05}s">
       <button class="card-delete" onclick="deleteItem('${item.id}', event)" title="Remove">✕</button>
       <img class="clothing-card-img" src="${item.img}" alt="${item.category}" loading="lazy"/>
       <div class="clothing-card-body">
@@ -687,24 +1193,17 @@ function renderCloset() {
     </div>
   `).join('');
 }
-
 function deleteItem(id, e) {
   e.stopPropagation();
   closet = closet.filter(i => String(i.id) !== String(id));
-  save();
-  renderCloset();
-  updateStats();
+  save(); renderCloset(); updateStats();
   showToast('Item removed from closet.');
 }
-
 function filterBy(cat) {
   currentFilter = cat;
-  document.querySelectorAll('.filter-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.cat === cat);
-  });
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
   renderCloset();
 }
-
 function updateFilterCounts() {
   document.getElementById('fc-all').textContent = closet.length;
   CATEGORIES.forEach(c => {
@@ -713,88 +1212,66 @@ function updateFilterCounts() {
   });
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 //  STATS
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 function updateStats() {
   document.getElementById('stat-items').textContent = closet.length;
   document.getElementById('stat-outfits').textContent = savedOutfits.length;
-  const cats = new Set(closet.map(i => i.category));
-  document.getElementById('stat-cats').textContent = cats.size;
+  document.getElementById('stat-cats').textContent = new Set(closet.map(i => i.category)).size;
 }
 
-// ═══════════════════════════════════════
-//  GENERATION MODE
-// ═══════════════════════════════════════
+// ════════════════════════════════════
+//  GENERATION
+// ════════════════════════════════════
 function setGenMode(mode, el) {
   genMode = mode;
   document.querySelectorAll('.gen-option-btn').forEach(b => b.classList.remove('active-opt'));
   el.classList.add('active-opt');
 }
-
-// ═══════════════════════════════════════
-//  GENERATE OUTFIT
-// ═══════════════════════════════════════
 function generateOutfit() {
   const btn = document.getElementById('genBtn');
   btn.classList.add('spin');
   setTimeout(() => btn.classList.remove('spin'), 500);
-
   const cats = GEN_MODES[genMode] || GEN_MODES['full'];
   currentOutfit = [];
-
   cats.forEach(cat => {
     const pool = closet.filter(i => i.category === cat);
-    if (pool.length > 0) {
-      currentOutfit.push({ ...pool[Math.floor(Math.random() * pool.length)], _role: cat });
-    }
+    if (pool.length > 0) currentOutfit.push({ ...pool[Math.floor(Math.random() * pool.length)], _role: cat });
   });
-
   const resultEl = document.getElementById('outfitResult');
-
   if (currentOutfit.length === 0) {
     resultEl.innerHTML = `<div class="outfit-empty">Add some clothes to your closet first!</div>`;
     document.getElementById('saveBtn').style.display = 'none';
     showToast('Add some items to generate an outfit!', true);
     return;
   }
-
   resultEl.innerHTML = currentOutfit.map((item, idx) => `
-    <div class="outfit-item" style="animation-delay:${idx * 0.12}s">
+    <div class="outfit-item" style="animation-delay:${idx*0.12}s">
       <img src="${item.img}" alt="${item.category}" loading="lazy"/>
       <div class="outfit-item-label">${CAT_EMOJI[item._role]} ${cap(item._role)}</div>
     </div>
   `).join('');
-
   document.getElementById('saveBtn').style.display = '';
 }
-
-// ═══════════════════════════════════════
-//  SAVE OUTFIT
-// ═══════════════════════════════════════
 function saveOutfit() {
   if (!currentOutfit.length) return;
-
   const outfit = {
     id: Date.now(),
     items: currentOutfit.map(i => ({ img: i.img, category: i._role })),
     mode: genMode,
     savedAt: new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
   };
-
-  savedOutfits.unshift(outfit);
-  save();
-  renderSaved();
-  updateStats();
+  savedOutfits.unshift(outfit); save();
+  renderSaved(); updateStats();
   showToast('✦ Look saved to your collection!');
 }
 
-// ═══════════════════════════════════════
-//  RENDER SAVED OUTFITS
-// ═══════════════════════════════════════
+// ════════════════════════════════════
+//  RENDER SAVED
+// ════════════════════════════════════
 function renderSaved() {
   const grid = document.getElementById('savedGrid');
-
   if (savedOutfits.length === 0) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
       <div class="empty-icon">🪞</div>
@@ -802,15 +1279,14 @@ function renderSaved() {
     </div>`;
     return;
   }
-
   grid.innerHTML = savedOutfits.map((outfit, idx) => `
-    <div class="saved-outfit-card" style="animation-delay:${idx * 0.06}s">
+    <div class="saved-outfit-card" style="animation-delay:${idx*0.06}s">
       <div class="saved-outfit-images">
-        ${outfit.items.slice(0, 4).map(it => `<img src="${it.img}" alt="${it.category}" loading="lazy"/>`).join('')}
+        ${outfit.items.slice(0,4).map(it => `<img src="${it.img}" alt="${it.category}" loading="lazy"/>`).join('')}
       </div>
       <div class="saved-outfit-body">
         <div class="saved-outfit-meta">
-          <h4>${cap(outfit.mode || 'Full')} Look</h4>
+          <h4>${cap(outfit.mode||'Full')} Look</h4>
           <p>${outfit.items.map(i => CAT_EMOJI[i.category]).join(' ')} · ${outfit.savedAt}</p>
         </div>
         <button class="saved-delete" onclick="deleteSaved('${outfit.id}')" title="Remove look">🗑</button>
@@ -818,18 +1294,15 @@ function renderSaved() {
     </div>
   `).join('');
 }
-
 function deleteSaved(id) {
   savedOutfits = savedOutfits.filter(o => String(o.id) !== String(id));
-  save();
-  renderSaved();
-  updateStats();
+  save(); renderSaved(); updateStats();
   showToast('Look removed.');
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 //  TOAST
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 let toastTimer;
 function showToast(msg, isError = false) {
   const t = document.getElementById('toast');
@@ -840,22 +1313,28 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 //  UTIL
-// ═══════════════════════════════════════
+// ════════════════════════════════════
 function cap(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1) : ''; }
 
-// Close modal on overlay click
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-renderCloset();
-renderSaved();
-updateStats();
+// ════════════════════════════════════
+//  INIT — check for existing session
+// ════════════════════════════════════
+(function init() {
+  const session = getSession();
+  if (session) {
+    const db = getUsersDB();
+    if (db[session]) {
+      currentUser = db[session];
+      loadUserData();
+      showApp();
+      return;
+    }
+  }
+  // show auth screen
+  document.getElementById('authScreen').classList.remove('hidden');
+})();
 </script>
 </body>
 </html>
