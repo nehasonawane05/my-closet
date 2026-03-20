@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Digital Closet</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --parchment: #ede6d6;
+    --espresso: #2c1a0e;
+    --mocha: #5c3d2e;
+    --dusty-rose: #c9907a;
+    --blush: #e8c4b8;
+    --sage: #8a9e85;
+    --gold: #c9a84c;
+    --ink: #1a1208;
+    --muted: #9c8a78;
+    --card-bg: #faf7f2;
+    --border: #ddd5c5;
+    --shadow: 0 4px 24px rgba(44,26,14,0.10);
+    --shadow-lg: 0 12px 48px rgba(44,26,14,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--espresso);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* — Noise texture overlay — */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  /* ═══════════ HEADER ═══════════ */
+  header {
+    background: var(--espresso);
+    color: var(--cream);
+    padding: 0 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 24px rgba(44,26,14,0.35);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 700; letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dusty-rose); display: inline-block; }
+  .header-stats {
+    display: flex; gap: 2rem; font-size: 0.78rem; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(245,240,232,0.65);
+  }
+  .header-stats span strong { color: var(--dusty-rose); font-weight: 500; margin-right: 0.25rem; }
+
+  /* ═══════════ MAIN LAYOUT ═══════════ */
+  main {
+    max-width: 1300px; margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+    position: relative; z-index: 1;
+  }
+
+  /* ═══════════ SECTION TITLES ═══════════ */
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.55rem; font-weight: 600;
+    color: var(--espresso); margin-bottom: 0.3rem;
+  }
+  .section-sub {
+    font-size: 0.8rem; color: var(--muted); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 1.4rem;
+  }
+
+  /* ═══════════ UPLOAD ZONE ═══════════ */
+  .upload-section { margin-bottom: 3rem; }
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 18px;
+    background: var(--card-bg);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--dusty-rose);
+    background: rgba(201,144,122,0.06);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .upload-icon {
+    width: 56px; height: 56px;
+    background: var(--parchment);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+  }
+  .upload-zone h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 600; margin-bottom: 0.4rem;
+  }
+  .upload-zone p { font-size: 0.82rem; color: var(--muted); }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  /* ═══════════ MODAL ═══════════ */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,18,8,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    animation: fadeIn 0.25s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%; max-width: 460px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s cubic-bezier(.22,.68,0,1.2);
+  }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; margin-bottom: 0.4rem;
+  }
+  .modal p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .modal-preview {
+    width: 100%; height: 220px;
+    object-fit: cover; border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .modal label {
+    font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 500; color: var(--mocha); display: block; margin-bottom: 0.6rem;
+  }
+  .tags-grid {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.8rem;
+  }
+  .tag-btn {
+    padding: 0.45rem 1rem; border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer;
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em;
+    color: var(--mocha); transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tag-btn:hover { border-color: var(--dusty-rose); color: var(--dusty-rose); background: rgba(201,144,122,0.08); }
+  .tag-btn.selected { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
+  .modal-actions { display: flex; gap: 0.75rem; }
+  .btn {
+    flex: 1; padding: 0.85rem 1.5rem; border-radius: 50px;
+    border: none; cursor: pointer; font-weight: 500;
+    font-size: 0.85rem; letter-spacing: 0.04em;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s ease;
+  }
+  .btn-primary { background: var(--espresso); color: var(--cream); }
+  .btn-primary:hover { background: var(--mocha); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(44,26,14,0.25); }
+  .btn-secondary { background: var(--parchment); color: var(--espresso); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-rose { background: var(--dusty-rose); color: #fff; }
+  .btn-rose:hover { background: #b87a66; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,144,122,0.4); }
+  .btn-sage { background: var(--sage); color: #fff; }
+  .btn-sage:hover { background: #728e6d; transform: translateY(-1px); }
+
+  /* ═══════════ FILTER TABS ═══════════ */
+  .filter-tabs {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.8rem;
+  }
+  .filter-tab {
+    padding: 0.45rem 1.1rem; border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: transparent; cursor: pointer;
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em;
+    color: var(--mocha); transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-tab:hover { border-color: var(--mocha); }
+  .filter-tab.active { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
+  .filter-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(255,255,255,0.18); font-size: 0.65rem;
+    margin-left: 0.35rem;
+  }
+  .filter-tab:not(.active) .filter-count { background: var(--border); color: var(--mocha); }
+
+  /* ═══════════ CLOTHING GRID ═══════════ */
+  .clothing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 3.5rem;
+  }
+  .clothing-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    animation: cardIn 0.4s cubic-bezier(.22,.68,0,1.2) both;
+    position: relative;
+    cursor: pointer;
+  }
+  .clothing-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--dusty-rose);
+  }
+  .clothing-card-img {
+    width: 100%; height: 200px; object-fit: cover;
+    display: block;
+  }
+  .clothing-card-body { padding: 0.75rem; }
+  .clothing-card-tag {
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.07em;
+    text-transform: uppercase; padding: 0.25rem 0.6rem;
+    border-radius: 50px; display: inline-block;
+  }
+  .clothing-card-name { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+  .card-delete {
+    position: absolute; top: 8px; right: 8px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(26,18,8,0.65); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; opacity: 0; transition: opacity 0.2s ease;
+  }
+  .clothing-card:hover .card-delete { opacity: 1; }
+
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center; padding: 4rem 2rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.88rem; line-height: 1.6; }
+
+  /* ═══════════ CATEGORY COLORS ═══════════ */
+  .cat-tops { background: rgba(201,144,122,0.18); color: #8b4a2f; }
+  .cat-bottoms { background: rgba(138,158,133,0.2); color: #3d5c38; }
+  .cat-dresses { background: rgba(201,168,76,0.18); color: #7a5a0f; }
+  .cat-outerwear { background: rgba(92,61,46,0.15); color: var(--mocha); }
+  .cat-shoes { background: rgba(44,26,14,0.12); color: var(--espresso); }
+  .cat-accessories { background: rgba(180,160,200,0.2); color: #5a3a7a; }
+
+  /* ═══════════ OUTFIT GENERATOR ═══════════ */
+  .generator-section {
+    background: var(--espresso);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+  .generator-section::before {
+    content: '✦';
+    position: absolute; right: 2rem; top: 50%; transform: translateY(-50%);
+    font-size: 8rem; opacity: 0.04; pointer-events: none;
+    color: var(--cream);
+  }
+  .generator-top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .generator-section .section-label { color: var(--cream); margin-bottom: 0.2rem; }
+  .generator-section .section-sub { color: rgba(245,240,232,0.5); margin-bottom: 0; }
+  .gen-controls { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ═══════════ OUTFIT RESULT ═══════════ */
+  .outfit-result {
+    display: flex; gap: 1.2rem; flex-wrap: wrap;
+    min-height: 60px;
+    align-items: flex-start;
+  }
+  .outfit-item {
+    background: rgba(245,240,232,0.08);
+    border: 1px solid rgba(245,240,232,0.15);
+    border-radius: 14px;
+    overflow: hidden;
+    width: 150px;
+    flex-shrink: 0;
+    animation: outfitReveal 0.5s cubic-bezier(.22,.68,0,1.2) both;
+    transition: all 0.25s ease;
+  }
+  .outfit-item:hover { transform: translateY(-4px); border-color: var(--dusty-rose); }
+  .outfit-item img { width: 100%; height: 160px; object-fit: cover; display: block; }
+  .outfit-item-label {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase;
+    color: rgba(245,240,232,0.6);
+  }
+  .outfit-empty {
+    color: rgba(245,240,232,0.35); font-size: 0.85rem;
+    font-style: italic; font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem; padding: 1rem 0;
+  }
+
+  /* Outfit generation options panel */
+  .gen-options {
+    display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .gen-option-btn {
+    padding: 0.45rem 1rem; border-radius: 50px;
+    border: 1.5px solid rgba(245,240,232,0.2);
+    background: transparent; cursor: pointer;
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em;
+    color: rgba(245,240,232,0.65); transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .gen-option-btn:hover { border-color: var(--dusty-rose); color: var(--dusty-rose); }
+  .gen-option-btn.active-opt { background: var(--dusty-rose); color: #fff; border-color: var(--dusty-rose); }
+
+  /* ═══════════ SAVED OUTFITS ═══════════ */
+  .saved-section { margin-bottom: 3rem; }
+  .saved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .saved-outfit-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    animation: cardIn 0.4s cubic-bezier(.22,.68,0,1.2) both;
+  }
+  .saved-outfit-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .saved-outfit-images {
+    display: flex; gap: 2px; height: 140px;
+    background: var(--parchment);
+  }
+  .saved-outfit-images img {
+    flex: 1; object-fit: cover; height: 100%;
+    min-width: 0;
+  }
+  .saved-outfit-body { padding: 1rem 1.1rem; display: flex; align-items: center; justify-content: space-between; }
+  .saved-outfit-meta h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem;
+  }
+  .saved-outfit-meta p { font-size: 0.75rem; color: var(--muted); }
+  .saved-delete {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--parchment); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; color: var(--muted); transition: all 0.2s ease;
+  }
+  .saved-delete:hover { background: #f5d5d0; color: #c0392b; }
+
+  /* ═══════════ TOAST ═══════════ */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--espresso); color: var(--cream);
+    padding: 0.85rem 2rem; border-radius: 50px;
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em;
+    z-index: 999; transition: transform 0.4s cubic-bezier(.22,.68,0,1.2);
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(44,26,14,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: #8b3a3a; }
+
+  /* ═══════════ ANIMATIONS ═══════════ */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes outfitReveal {
+    from { opacity: 0; transform: translateY(18px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes spinOnce {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin { animation: spinOnce 0.5s ease; }
+
+  /* ═══════════ DIVIDER ═══════════ */
+  .fancy-divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 2.5rem 0; color: var(--muted);
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .fancy-divider::before, .fancy-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 640px) {
+    header { padding: 0 1.2rem; }
+    .header-stats { display: none; }
+    main { padding: 1.5rem 1rem 4rem; }
+    .generator-section { padding: 1.5rem; }
+    .clothing-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .outfit-item { width: 120px; }
+    .outfit-item img { height: 130px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    My Closet
+  </div>
+  <div class="header-stats">
+    <span><strong id="stat-items">0</strong> pieces</span>
+    <span><strong id="stat-outfits">0</strong> saved looks</span>
+    <span><strong id="stat-cats">0</strong> categories</span>
+  </div>
+</header>
+
+<!-- ═══════ MAIN ═══════ -->
+<main>
+
+  <!-- UPLOAD -->
+  <div class="upload-section">
+    <div class="section-label">Add to Your Closet</div>
+    <div class="section-sub">Upload your pieces</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" multiple />
+      <div class="upload-icon">👗</div>
+      <h3>Drop your clothing photos here</h3>
+      <p>or click to browse — JPEG, PNG, WEBP supported</p>
+    </div>
+  </div>
+
+  <!-- WARDROBE -->
+  <div id="wardrobeSection">
+    <div class="section-label">Your Wardrobe</div>
+    <div class="section-sub">All your pieces</div>
+
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-cat="all" onclick="filterBy('all')">
+        All <span class="filter-count" id="fc-all">0</span>
+      </button>
+      <button class="filter-tab" data-cat="tops" onclick="filterBy('tops')">
+        Tops <span class="filter-count" id="fc-tops">0</span>
+      </button>
+      <button class="filter-tab" data-cat="bottoms" onclick="filterBy('bottoms')">
+        Bottoms <span class="filter-count" id="fc-bottoms">0</span>
+      </button>
+      <button class="filter-tab" data-cat="dresses" onclick="filterBy('dresses')">
+        Dresses <span class="filter-count" id="fc-dresses">0</span>
+      </button>
+      <button class="filter-tab" data-cat="outerwear" onclick="filterBy('outerwear')">
+        Outerwear <span class="filter-count" id="fc-outerwear">0</span>
+      </button>
+      <button class="filter-tab" data-cat="shoes" onclick="filterBy('shoes')">
+        Shoes <span class="filter-count" id="fc-shoes">0</span>
+      </button>
+      <button class="filter-tab" data-cat="accessories" onclick="filterBy('accessories')">
+        Accessories <span class="filter-count" id="fc-accessories">0</span>
+      </button>
+    </div>
+
+    <div class="clothing-grid" id="clothingGrid">
+      <div class="empty-state">
+        <div class="empty-icon">🧺</div>
+        <p>Your closet is empty.<br/>Upload some clothing photos to get started!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="fancy-divider">✦ &nbsp; outfit generator &nbsp; ✦</div>
+
+  <!-- OUTFIT GENERATOR -->
+  <div class="generator-section">
+    <div class="generator-top">
+      <div>
+        <div class="section-label">Generate an Outfit</div>
+        <div class="section-sub">Let the closet decide</div>
+      </div>
+      <div class="gen-controls">
+        <button class="btn btn-rose" onclick="generateOutfit()" id="genBtn" style="min-width:160px;">
+          ✦ Generate Look
+        </button>
+        <button class="btn btn-secondary" onclick="saveOutfit()" id="saveBtn" style="color:var(--espresso); min-width:130px; display:none;">
+          ♡ Save Look
+        </button>
+      </div>
+    </div>
+
+    <!-- Generation Mode Options -->
+    <div>
+      <div style="font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:0.75rem;">Generation Style</div>
+      <div class="gen-options">
+        <button class="gen-option-btn active-opt" data-mode="full" onclick="setGenMode('full', this)">Full Outfit</button>
+        <button class="gen-option-btn" data-mode="top-bottom" onclick="setGenMode('top-bottom', this)">Top + Bottom</button>
+        <button class="gen-option-btn" data-mode="dress" onclick="setGenMode('dress', this)">Dress Look</button>
+        <button class="gen-option-btn" data-mode="casual" onclick="setGenMode('casual', this)">Casual Combo</button>
+        <button class="gen-option-btn" data-mode="layered" onclick="setGenMode('layered', this)">Layered</button>
+      </div>
+    </div>
+
+    <div class="outfit-result" id="outfitResult">
+      <div class="outfit-empty">Generate a look to see your outfit appear here…</div>
+    </div>
+  </div>
+
+  <!-- SAVED OUTFITS -->
+  <div class="saved-section">
+    <div class="section-label">Saved Looks</div>
+    <div class="section-sub">Your curated collection</div>
+    <div class="saved-grid" id="savedGrid">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">🪞</div>
+        <p>No saved looks yet.<br/>Generate an outfit and save your favourites!</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════ MODAL ═══════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Tag This Piece</h2>
+    <p>Choose a category so the generator can include it in outfits.</p>
+    <img id="modalPreview" class="modal-preview" src="" alt="preview"/>
+    <label>Category</label>
+    <div class="tags-grid" id="tagsGrid">
+      <button class="tag-btn" data-tag="tops" onclick="selectTag('tops', this)">👚 Tops</button>
+      <button class="tag-btn" data-tag="bottoms" onclick="selectTag('bottoms', this)">👖 Bottoms</button>
+      <button class="tag-btn" data-tag="dresses" onclick="selectTag('dresses', this)">👗 Dresses</button>
+      <button class="tag-btn" data-tag="outerwear" onclick="selectTag('outerwear', this)">🧥 Outerwear</button>
+      <button class="tag-btn" data-tag="shoes" onclick="selectTag('shoes', this)">👠 Shoes</button>
+      <button class="tag-btn" data-tag="accessories" onclick="selectTag('accessories', this)">💍 Accessories</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmAdd()">Add to Closet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TOAST ═══════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let closet = JSON.parse(localStorage.getItem('closet_items') || '[]');
+let savedOutfits = JSON.parse(localStorage.getItem('closet_saved') || '[]');
+let pendingItem = null;
+let selectedTag = null;
+let currentFilter = 'all';
+let currentOutfit = [];
+let genMode = 'full';
+
+const CATEGORIES = ['tops','bottoms','dresses','outerwear','shoes','accessories'];
+
+const CAT_EMOJI = {
+  tops: '👚', bottoms: '👖', dresses: '👗',
+  outerwear: '🧥', shoes: '👠', accessories: '💍'
+};
+
+// Mode → which categories to pull from
+const GEN_MODES = {
+  'full':      ['tops','bottoms','shoes','accessories'],
+  'top-bottom':['tops','bottoms'],
+  'dress':     ['dresses','shoes','accessories'],
+  'casual':    ['tops','bottoms','shoes'],
+  'layered':   ['tops','outerwear','bottoms','shoes'],
+};
+
+// ═══════════════════════════════════════
+//  PERSIST
+// ═══════════════════════════════════════
+function save() {
+  localStorage.setItem('closet_items', JSON.stringify(closet));
+  localStorage.setItem('closet_saved', JSON.stringify(savedOutfits));
+}
+
+// ═══════════════════════════════════════
+//  UPLOAD
+// ═══════════════════════════════════════
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('fileInput');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => openModal(ev.target.result);
+    reader.readAsDataURL(file);
+  });
+  fileInput.value = '';
+}
+
+// ═══════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════
+function openModal(imgData) {
+  pendingItem = imgData;
+  selectedTag = null;
+  document.getElementById('modalPreview').src = imgData;
+  document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  pendingItem = null; selectedTag = null;
+}
+function selectTag(tag, el) {
+  selectedTag = tag;
+  document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function confirmAdd() {
+  if (!selectedTag) { showToast('Please select a category first.', true); return; }
+  const item = {
+    id: Date.now() + Math.random(),
+    img: pendingItem,
+    category: selectedTag,
+    addedAt: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+  };
+  closet.push(item);
+  save();
+  closeModal();
+  renderCloset();
+  updateStats();
+  showToast(`${CAT_EMOJI[selectedTag]} Added to ${cap(selectedTag)}!`);
+}
+
+// ═══════════════════════════════════════
+//  RENDER CLOSET
+// ═══════════════════════════════════════
+function renderCloset() {
+  const grid = document.getElementById('clothingGrid');
+  const filtered = currentFilter === 'all' ? closet : closet.filter(i => i.category === currentFilter);
+
+  updateFilterCounts();
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${currentFilter === 'all' ? '🧺' : CAT_EMOJI[currentFilter] || '🧺'}</div>
+      <p>${currentFilter === 'all' ? 'Your closet is empty.<br/>Upload some clothing photos to get started!' : `No ${cap(currentFilter)} yet.<br/>Upload some to fill this category!`}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((item, idx) => `
+    <div class="clothing-card" style="animation-delay:${idx * 0.05}s">
+      <button class="card-delete" onclick="deleteItem('${item.id}', event)" title="Remove">✕</button>
+      <img class="clothing-card-img" src="${item.img}" alt="${item.category}" loading="lazy"/>
+      <div class="clothing-card-body">
+        <span class="clothing-card-tag cat-${item.category}">${CAT_EMOJI[item.category]} ${cap(item.category)}</span>
+        <div class="clothing-card-name">Added ${item.addedAt}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteItem(id, e) {
+  e.stopPropagation();
+  closet = closet.filter(i => String(i.id) !== String(id));
+  save();
+  renderCloset();
+  updateStats();
+  showToast('Item removed from closet.');
+}
+
+function filterBy(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.cat === cat);
+  });
+  renderCloset();
+}
+
+function updateFilterCounts() {
+  document.getElementById('fc-all').textContent = closet.length;
+  CATEGORIES.forEach(c => {
+    const el = document.getElementById(`fc-${c}`);
+    if (el) el.textContent = closet.filter(i => i.category === c).length;
+  });
+}
+
+// ═══════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════
+function updateStats() {
+  document.getElementById('stat-items').textContent = closet.length;
+  document.getElementById('stat-outfits').textContent = savedOutfits.length;
+  const cats = new Set(closet.map(i => i.category));
+  document.getElementById('stat-cats').textContent = cats.size;
+}
+
+// ═══════════════════════════════════════
+//  GENERATION MODE
+// ═══════════════════════════════════════
+function setGenMode(mode, el) {
+  genMode = mode;
+  document.querySelectorAll('.gen-option-btn').forEach(b => b.classList.remove('active-opt'));
+  el.classList.add('active-opt');
+}
+
+// ═══════════════════════════════════════
+//  GENERATE OUTFIT
+// ═══════════════════════════════════════
+function generateOutfit() {
+  const btn = document.getElementById('genBtn');
+  btn.classList.add('spin');
+  setTimeout(() => btn.classList.remove('spin'), 500);
+
+  const cats = GEN_MODES[genMode] || GEN_MODES['full'];
+  currentOutfit = [];
+
+  cats.forEach(cat => {
+    const pool = closet.filter(i => i.category === cat);
+    if (pool.length > 0) {
+      currentOutfit.push({ ...pool[Math.floor(Math.random() * pool.length)], _role: cat });
+    }
+  });
+
+  const resultEl = document.getElementById('outfitResult');
+
+  if (currentOutfit.length === 0) {
+    resultEl.innerHTML = `<div class="outfit-empty">Add some clothes to your closet first!</div>`;
+    document.getElementById('saveBtn').style.display = 'none';
+    showToast('Add some items to generate an outfit!', true);
+    return;
+  }
+
+  resultEl.innerHTML = currentOutfit.map((item, idx) => `
+    <div class="outfit-item" style="animation-delay:${idx * 0.12}s">
+      <img src="${item.img}" alt="${item.category}" loading="lazy"/>
+      <div class="outfit-item-label">${CAT_EMOJI[item._role]} ${cap(item._role)}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('saveBtn').style.display = '';
+}
+
+// ═══════════════════════════════════════
+//  SAVE OUTFIT
+// ═══════════════════════════════════════
+function saveOutfit() {
+  if (!currentOutfit.length) return;
+
+  const outfit = {
+    id: Date.now(),
+    items: currentOutfit.map(i => ({ img: i.img, category: i._role })),
+    mode: genMode,
+    savedAt: new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+  };
+
+  savedOutfits.unshift(outfit);
+  save();
+  renderSaved();
+  updateStats();
+  showToast('✦ Look saved to your collection!');
+}
+
+// ═══════════════════════════════════════
+//  RENDER SAVED OUTFITS
+// ═══════════════════════════════════════
+function renderSaved() {
+  const grid = document.getElementById('savedGrid');
+
+  if (savedOutfits.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">🪞</div>
+      <p>No saved looks yet.<br/>Generate an outfit and save your favourites!</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = savedOutfits.map((outfit, idx) => `
+    <div class="saved-outfit-card" style="animation-delay:${idx * 0.06}s">
+      <div class="saved-outfit-images">
+        ${outfit.items.slice(0, 4).map(it => `<img src="${it.img}" alt="${it.category}" loading="lazy"/>`).join('')}
+      </div>
+      <div class="saved-outfit-body">
+        <div class="saved-outfit-meta">
+          <h4>${cap(outfit.mode || 'Full')} Look</h4>
+          <p>${outfit.items.map(i => CAT_EMOJI[i.category]).join(' ')} · ${outfit.savedAt}</p>
+        </div>
+        <button class="saved-delete" onclick="deleteSaved('${outfit.id}')" title="Remove look">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteSaved(id) {
+  savedOutfits = savedOutfits.filter(o => String(o.id) !== String(id));
+  save();
+  renderSaved();
+  updateStats();
+  showToast('Look removed.');
+}
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.add('show'), 10);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════
+//  UTIL
+// ═══════════════════════════════════════
+function cap(str) { return str ? str.charAt(0).toUpperCase() + str.slice(1) : ''; }
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+renderCloset();
+renderSaved();
+updateStats();
+</script>
+</body>
+</html>
